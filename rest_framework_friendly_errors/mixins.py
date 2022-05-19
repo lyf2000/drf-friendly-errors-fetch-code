@@ -160,6 +160,7 @@ class FriendlyErrorMessagesMixin(FieldMap):
                 except AttributeError:
                     name = validator.__class__.__name__
                 code = self.FIELD_VALIDATION_ERRORS.get(name) or settings.FRIENDLY_VALIDATOR_ERRORS.get(name)
+                code = code if code is not None else error.code
                 return {'code': code,
                         'field': field.field_name,
                         'message': error}
@@ -169,8 +170,10 @@ class FriendlyErrorMessagesMixin(FieldMap):
             if self._run_validator(validator, field, error):
                 name = validator.__name__
                 code = self.FIELD_VALIDATION_ERRORS.get(name) or settings.FRIENDLY_VALIDATOR_ERRORS.get(name)
+                code = code if code is not None else error.code
                 return {'code': code, 'field': field.field_name,
                         'message': error}
+        code = code if code is not None else error.code
         return {'code': settings.FRIENDLY_FIELD_ERRORS.get(
                 field_type, {}).get(key),
                 'field': field.field_name,
