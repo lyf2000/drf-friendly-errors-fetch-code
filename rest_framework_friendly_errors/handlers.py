@@ -15,13 +15,32 @@ def friendly_exception_handler(exc, context):
     if response is not None:
         if is_pretty(response):
             return response
-        error_message = response.data['detail']
-        error_code = settings.FRIENDLY_EXCEPTION_DICT.get(
-            exc.__class__.__name__)
-        response.data.pop('detail', {})
-        response.data['code'] = error_code
-        response.data['message'] = error_message
-        response.data['status_code'] = response.status_code
-        # response.data['exception'] = exc.__class__.__name__
+
+        if isinstance(response.data, list):
+            errors = response.data
+            response.data = {}
+            error_code = settings.FRIENDLY_EXCEPTION_DICT.get(
+                exc.__class__.__name__)
+            response.data.pop('detail', {})
+            response.data['code'] = error_code
+            response.data['message'] = 'Error'
+            response.data['status_code'] = response.status_code
+            response.data['errors'] = [
+                dict(
+                    code=getattr(err, 'code', None),
+                    field=None,
+                    message=err,
+                )
+                for err in errors
+            ]
+        else:
+            error_message = response.data['detail']
+            error_code = settings.FRIENDLY_EXCEPTION_DICT.get(
+                exc.__class__.__name__)
+            response.data.pop('detail', {})
+            response.data['code'] = error_code
+            response.data['message'] = error_message
+            response.data['status_code'] = response.status_code
+            # response.data['exception'] = exc.__class__.__name__
 
     return response
