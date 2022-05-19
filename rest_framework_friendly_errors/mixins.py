@@ -173,7 +173,7 @@ class FriendlyErrorMessagesMixin(FieldMap):
                 code = code if code is not None else error.code
                 return {'code': code, 'field': field.field_name,
                         'message': error}
-        code = code if code is not None else error.code
+
         return {'code': settings.FRIENDLY_FIELD_ERRORS.get(
                 field_type, {}).get(key),
                 'field': field.field_name,
