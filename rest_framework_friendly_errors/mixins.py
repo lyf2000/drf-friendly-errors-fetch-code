@@ -135,7 +135,21 @@ class FriendlyErrorMessagesMixin(FieldMap):
 
     def _run_validator(self, validator, field, message):
         try:
-            validator(self.initial_data[field.field_name])
+            if hasattr(validator, 'set_context'):
+                warnings.warn(
+                    "Method `set_context` on validators is deprecated and will "
+                    "no longer be called starting with 3.13. Instead set "
+                    "`requires_context = True` on the class, and accept the "
+                    "context as an additional argument.",
+                    RemovedInDRF313Warning, stacklevel=2
+                )
+                validator.set_context(self)
+
+            if getattr(validator, 'requires_context', False):
+                validator(self.initial_data[field.field_name], field)
+            else:
+                validator(self.initial_data[field.field_name])
+
         except (DjangoValidationError, RestValidationError) as err:
             err_message = err.detail[0] \
                 if hasattr(err, 'detail') else err.message
